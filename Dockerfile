@@ -1,17 +1,15 @@
-# syntax=docker/dockerfile:1
+#build stage
+FROM golang:alpine AS builder
+RUN apk add --no-cache git
+WORKDIR /go/src/app
+COPY . .
+RUN go get -d -v ./...
+RUN go build -o /go/bin/app -v ./...
 
-FROM golang:1.16-alpine
-
-WORKDIR /app
-
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
-
-COPY *.go ./
-
-RUN go build -o /tetTask
-
-EXPOSE 8080
-
-CMD [ "/tetTask" ]
+#final stage
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+COPY --from=builder /go/bin/app /app
+ENTRYPOINT /app
+LABEL Name=tettask Version=0.0.1
+EXPOSE 80

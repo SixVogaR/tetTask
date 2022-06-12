@@ -1,0 +1,35 @@
+version: '3.7'
+services:
+  db:
+    container_name: database
+    build:
+      context: .
+      dockerfile: db.Dockerfile
+    networks:
+      - default
+    restart: always
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: currencies
+      MYSQL_USER: user
+      MYSQL_PASSWORD: admin
+    volumes:
+      - 'mysql_data:/var/lib/mysql'
+    command: --sql_mode=""
+  api:
+    container_name: currencies_api
+    build:
+      context: .
+      dockerfile: api.Dockerfile
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+    volumes:
+      - '.:/app/'
+networks:
+  default: null
+volumes:
+  mysql_data: null
