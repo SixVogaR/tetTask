@@ -37,7 +37,7 @@ func ConnectDB() {
 
 //Based on the input flags, loads fresh data or starts the microservice
 func main() {
-	//Opens a DB connection for later use
+	//Opens a DB connection
 	ConnectDB()
 
 	action := flag.String("action", "none", "Use the flag -action loadCurrencies to load fresh data or\n -action startEndpoints to start the microservice")
