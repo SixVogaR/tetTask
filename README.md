@@ -48,6 +48,8 @@ This endpoint will display the latest exchange rates for each currency. Results 
 ### /currencies/{currency_name}
 This endpoint takes the GET parameter {currency_name} and then returns all of the recorded values of said currency, also in JSON format. For example /currencies/AUD will return all historical values for the Australian dollar.
 
+For a list of available currencies, check [here][url4]
+
 **NOTE:** Before trying to access these endpoints, make sure to run `go run main.go -action startEndpoints`, so that the endpoints are ready. Also, if the endpoints return empty JSON, run `go run main.go -action loadCurrencies`, which will populate the database.
 
 ## Example usage
@@ -68,4 +70,4 @@ Now open [localhost:8080/currencies][url2] in your browser to view all latest cu
    [url1]: <https://www.bank.lv/vk/ecb_rss.xml>
    [url2]: <http:localhost:8080/currencies>
    [url3]: <http:localhost:8080/currencies/AUD>
-
+   [url4]: <https://www.bank.lv/statistika/dati-statistika/valutu-kursi/aktualie>
