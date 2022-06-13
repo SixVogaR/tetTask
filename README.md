@@ -13,7 +13,7 @@ Download the full repository and save it on your machine.
 This program by default uses ports `8080` for the web app and `3306` for the database. If these ports are taken on your machine, change `DB_PORT=3306` and `WEB_PORT=8080` inside the .env file in the root of the repository.
 Open a terminal of your choice and cd into the downloaded folder.
 ```
-$ cd <path-to-folder>/tetTask
+$ cd <path-to-folder>/tetTask-main
 ```
 Run the command `docker compose build` and wait for the build process to end (This requires Docker being installed on your system)
 ```
