@@ -15,15 +15,15 @@ Open a terminal of your choice and cd into the downloaded folder.
 ```
 $ cd <path-to-folder>/tetTask
 ```
-Run the command 'docker compose build' and wait for the build process to end (This requires Docker being installed on your system)
+Run the command `docker compose build` and wait for the build process to end (This requires Docker being installed on your system)
 ```
 $ docker compose build
 ```
-Run the command 'docker compose up', this will create and start up the docker containers
+Run the command `docker compose up`, this will create and start up the docker containers
 ```
 $ docker compose up
 ```
-Now that the containers are running, run the command 'docker exec -it currencies_api sh'
+Now that the containers are running, run the command `docker exec -it currencies_api sh`
 ```
 $ docker exec -it currencies_api sh
 ```
