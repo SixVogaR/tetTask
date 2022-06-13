@@ -22,25 +22,9 @@ type Currency struct {
 	Date  string `json:"date"`
 }
 
-//Global DB variable
-var DB *sql.DB
-
-//Establishes a global connection to the DB
-func ConnectDB() {
-	db, err := sql.Open("mysql", "user:admin@tcp(db:3306)/currencies")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	DB = db
-}
-
-//Based on the input flags, loads fresh data or starts the microservice
+//Using input flags, waits for user input to start endpoints or load fresh data from the RSS feed
 func main() {
-	//Opens a DB connection for later use
-	ConnectDB()
-
-	action := flag.String("action", "none", "Use the flag -action loadCurrencies to load fresh data or\n -action startEndpoints to start the microservice")
+	action := flag.String("action", "none", "Use the flag -action loadCurrencies to load fresh data or -action startEndpoints to start the microservice")
 	flag.Parse()
 
 	switch {
@@ -78,6 +62,7 @@ func loadCurrencies() {
 		values := strings.Fields(n.InnerText())
 		dates := xmlquery.Find(doc, "//item/pubDate")
 
+		//Date formatting for insertion to the database
 		date, _ := time.Parse(time.RFC1123Z, dates[i].InnerText())
 		sqldate := date.Format("2006-01-02")
 
@@ -92,6 +77,7 @@ func loadCurrencies() {
 				log.Fatal(err)
 			}
 
+			//For each succesful insert, adds to the counter, which is presented to the user after the query ends
 			if currID != 0 {
 				count++
 			}
@@ -108,7 +94,10 @@ func loadCurrencies() {
 
 //Recieves a currency structure and inserts it to the database IF it is unique.
 func addCurrency(curr Currency) (int64, error) {
-	result, err := DB.Exec("INSERT INTO currency (name, value, date) SELECT ?, ?, ? WHERE NOT EXISTS(SELECT id FROM currency WHERE name = ? AND value = ? AND date = ?)", curr.Name, curr.Value, curr.Date, curr.Name, curr.Value, curr.Date)
+	db, err := sql.Open("mysql", "user:admin@tcp(db:3306)/currencies")
+
+	//Query checks for existing records, if none are found, inserts a new record
+	result, err := db.Exec("INSERT INTO currency (name, value, date) SELECT ?, ?, ? WHERE NOT EXISTS(SELECT id FROM currency WHERE name = ? AND value = ? AND date = ?)", curr.Name, curr.Value, curr.Date, curr.Name, curr.Value, curr.Date)
 	if err != nil {
 		return 0, fmt.Errorf("addCurrency: %v", err)
 	}
@@ -123,15 +112,19 @@ func addCurrency(curr Currency) (int64, error) {
 func getLatestCurrencies(c *gin.Context) {
 	var currencies []Currency
 
+	db, err := sql.Open("mysql", "user:admin@tcp(db:3306)/currencies")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	//Selects the LATEST value by date for each currency
-	rows, err := DB.Query("SELECT c.* FROM currency c INNER JOIN (SELECT name, value, MAX(date) AS maxdate FROM currency GROUP BY name) grouped ON c.name = grouped.name AND c.date = grouped.maxdate")
-	//rows, err := db.Query("SELECT * FROM currency")
+	rows, err := db.Query("SELECT c.* FROM currency c INNER JOIN (SELECT name, value, MAX(date) AS maxdate FROM currency GROUP BY name) grouped ON c.name = grouped.name AND c.date = grouped.maxdate")
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 
-	//For each record found, writes it to a Currency structure and adds that to the "currencies" variable
+	//For each record found, writes it to a Currency structure and adds that to "currencies"
 	for rows.Next() {
 		var cur Currency
 		if err := rows.Scan(&cur.ID, &cur.Name, &cur.Value, &cur.Date); err != nil {
@@ -156,14 +149,19 @@ func getCurrency(c *gin.Context) {
 	name := c.Param("name")
 
 	var currencies []Currency
+	db, err := sql.Open("mysql", "user:admin@tcp(db:3306)/currencies")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	rows, err := DB.Query("SELECT * FROM currency WHERE name = ?", name)
+	//Query selects all records with the name that was read from the GET parameter
+	rows, err := db.Query("SELECT * FROM currency WHERE name = ?", name)
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 
-	//For each record found, writes it to a Currency structure and adds that to the "currencies" variable
+	//For each record found, writes it to a Currency structure and adds that to "currencies"
 	for rows.Next() {
 		var cur Currency
 		if err := rows.Scan(&cur.ID, &cur.Name, &cur.Value, &cur.Date); err != nil {
