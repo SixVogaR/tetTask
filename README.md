@@ -56,6 +56,8 @@ $ cd <path-to-folder>/tetTask
 $ docker compose build
 $ docker compose up
 $ docker exec -it currencies_api sh
+```
+```
 $ go run main.go -action loadCurrencies
 Successfully added 93 new currencies!
 $ go run main.go -action startEndpoints
