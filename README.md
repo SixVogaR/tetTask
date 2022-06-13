@@ -68,6 +68,8 @@ $ go run main.go -action startEndpoints
 ```
 Now open [localhost:8080/currencies][url2] in your browser to view all latest currencies or [localhost:8080/currencies/AUD][url3] to view the Australian dollar exchange rates.
 
+**NOTE:** If you changed the WEB_PORT value in the .env file, use that value in the link. (localhost:{YOUR_PORT}/currencies)
+
    [url1]: <https://www.bank.lv/vk/ecb_rss.xml>
    [url2]: <http:localhost:8080/currencies>
    [url3]: <http:localhost:8080/currencies/AUD>
