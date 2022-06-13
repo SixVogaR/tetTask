@@ -22,9 +22,9 @@ type Currency struct {
 	Date  string `json:"date"`
 }
 
-//Based on the input flags, loads fresh data or starts the microservice
+//Using input flags, waits for user input to start endpoints or load fresh data from the RSS feed
 func main() {
-	action := flag.String("action", "none", "Use the flag -action loadCurrencies to load fresh data or\n -action startEndpoints to start the microservice")
+	action := flag.String("action", "none", "Use the flag -action loadCurrencies to load fresh data or -action startEndpoints to start the microservice")
 	flag.Parse()
 
 	switch {
@@ -62,6 +62,7 @@ func loadCurrencies() {
 		values := strings.Fields(n.InnerText())
 		dates := xmlquery.Find(doc, "//item/pubDate")
 
+		//Date formatting for insertion to the database
 		date, _ := time.Parse(time.RFC1123Z, dates[i].InnerText())
 		sqldate := date.Format("2006-01-02")
 
@@ -76,6 +77,7 @@ func loadCurrencies() {
 				log.Fatal(err)
 			}
 
+			//For each succesful insert, adds to the counter, which is presented to the user after the query ends
 			if currID != 0 {
 				count++
 			}
@@ -94,6 +96,7 @@ func loadCurrencies() {
 func addCurrency(curr Currency) (int64, error) {
 	db, err := sql.Open("mysql", "user:admin@tcp(db:3306)/currencies")
 
+	//Query checks for existing records, if none are found, inserts a new record
 	result, err := db.Exec("INSERT INTO currency (name, value, date) SELECT ?, ?, ? WHERE NOT EXISTS(SELECT id FROM currency WHERE name = ? AND value = ? AND date = ?)", curr.Name, curr.Value, curr.Date, curr.Name, curr.Value, curr.Date)
 	if err != nil {
 		return 0, fmt.Errorf("addCurrency: %v", err)
@@ -116,13 +119,12 @@ func getLatestCurrencies(c *gin.Context) {
 
 	//Selects the LATEST value by date for each currency
 	rows, err := db.Query("SELECT c.* FROM currency c INNER JOIN (SELECT name, value, MAX(date) AS maxdate FROM currency GROUP BY name) grouped ON c.name = grouped.name AND c.date = grouped.maxdate")
-	//rows, err := db.Query("SELECT * FROM currency")
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 
-	//For each record found, writes it to a Currency structure and adds that to the "currencies" variable
+	//For each record found, writes it to a Currency structure and adds that to "currencies"
 	for rows.Next() {
 		var cur Currency
 		if err := rows.Scan(&cur.ID, &cur.Name, &cur.Value, &cur.Date); err != nil {
@@ -151,13 +153,15 @@ func getCurrency(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	//Query selects all records with the name that was read from the GET parameter
 	rows, err := db.Query("SELECT * FROM currency WHERE name = ?", name)
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 
-	//For each record found, writes it to a Currency structure and adds that to the "currencies" variable
+	//For each record found, writes it to a Currency structure and adds that to "currencies"
 	for rows.Next() {
 		var cur Currency
 		if err := rows.Scan(&cur.ID, &cur.Name, &cur.Value, &cur.Date); err != nil {

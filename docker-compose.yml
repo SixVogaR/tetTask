@@ -9,7 +9,7 @@ services:
       - default
     restart: always
     ports:
-      - '3306:3306'
+      - ${DB_PORT}:3306
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: admin
       MYSQL_DATABASE: currencies
@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: api.Dockerfile
     ports:
-      - '8080:8080'
+      - ${WEB_PORT}:8080
     depends_on:
       - db
     volumes:
