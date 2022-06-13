@@ -35,7 +35,7 @@ After starting and running the docker containers, and launching a command termin
 ```
 $ go run main.go -action loadCurrencies
 ```
-This command  will grab the latest currency exchange rates from [Bank of Latvia's RSS feed][url1] and push them to the database. 
+This command  will grab the latest currency exchange rates from [Bank of Latvia's RSS feed][url1] and push them to the database. Only new, unique records are stored, so running this command immediately again will not store any new records.
 ```
 $ go run main.go -action startEndpoints
 ```
